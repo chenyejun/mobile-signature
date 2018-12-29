@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <title>手写签名canvas实现</title>
+</head>
+<style>
+    #myCanvas {
+        padding: 10px;
+        font-size: 14px;
+    }
+    #myCanvas #canvas {
+        width: 100%;
+        height: 300px;
+        margin-bottom: 10px;
+    }
+
+    #myCanvas .button {
+        border: none;
+        padding: 5px 10px;
+        border-radius: 5px;
+        background: #4F94CD;
+        color: white;
+    }
+    #myCanvas .imgOut {
+        margin-top: 10px;
+    }
+
+    #myCanvas .border {
+        border: 1px solid #eee;
+    }
+    #myCanvas .colum {
+        padding: 5px 0;
+    }
+    #myCanvas .colum input{
+        border: 1px solid #ccc;
+        height: 23px;
+        line-height: 23px;
+        margin: 0 5px;
+        width: 69px;
+    }
+</style>
+<body>
+    <div id="myCanvas">
+        <div id="canvas" class="border"></div>
+        <button id="clearCanvas" class="button">清除</button>
+        <button id="saveCanvas" class="button">保存</button>
+        <button id="previous" class="button">上一步</button>
+        <button id="eraser" class="button" value="0">橡皮檫</button>
+        <div class="colum">
+            修改笔触大小：<input id="lineWidthInput" type="text" value="3"><button id="modifyLineWidth" class="button">确定</button>
+        </div>
+        <div class="colum">
+            修改笔触颜色：<input id="colorInput" type="text" value="#ff0000" placeholder="请输入十六进制颜色"><button id="modifyColor" class="button">确定</button>
+        </div>
+        <div class="imgOut">
+            <p>保存生成的图片：</p>
+            <img id="img" class="border" src="" alt="" srcset="">
+        </div>
+    </div>
+    <script src="./signature.js"></script>
+    <script>
+        window.onload = function() {
+            var signature = new Signature({
+                el: document.getElementById('canvas'), //绘制canvas的父级div
+                color: 'red',
+                lineWidth: 3
+            });
+
+            var oClearCanvas = document.getElementById('clearCanvas');
+            var oSaveCanvas = document.getElementById('saveCanvas');
+            var oPrevious = document.getElementById('previous');
+            var oEraser = document.getElementById('eraser');
+            var oLineWidthInput = document.getElementById('lineWidthInput');
+            var oModifyLineWidth = document.getElementById('modifyLineWidth');
+            var oColorInput = document.getElementById('colorInput');
+            var oModifyColor = document.getElementById('modifyColor');
+
+            // 清除画布
+            oClearCanvas.onclick = function () {
+                signature.clear();
+            }
+            oSaveCanvas.onclick = function () {
+                var base64 = signature.save();
+                document.getElementById('img').setAttribute('src', base64);
+            }
+            // 返回上一步
+            oPrevious.onclick = function () {
+                signature.previous();
+            }
+            // 橡皮檫切换
+            oEraser.onclick = function () {
+                var value=this.getAttribute('value');
+                if(value=='0'){
+                    this.setAttribute('value', '1');
+                    this.style.backgroundColor='yellow';
+                }else{
+                    this.setAttribute('value', '0');
+                    this.style.backgroundColor='#4F94CD';
+                }
+                // value为0: 橡皮檫
+                // value为1: 画笔
+                signature.eraser(value);
+            }
+            // 修改笔触大小：
+            oModifyLineWidth.addEventListener('click', function(){
+                var val = Number(oLineWidthInput.value);
+                 if (val) {
+                    signature.modifyLineWidth(val);
+                 }
+            }, false);
+            // 修改笔触颜色：
+            oModifyColor.addEventListener('click', function(){
+                signature.modifyColor(oColorInput.value);
+            }, false);
+        };
+    </script>
+</body>
+</html>
