@@ -40,7 +40,12 @@ function Signature(obj) {
     //开始绘制
     this.canvas.addEventListener('touchstart', function(e) {
         this.previousPoint = [];
-        this.previousPoint.push({'event':e,'state':this.state});
+        this.previousPoint.push({
+            'event': e, 
+            'state': this.state,
+            'lineWidth': this.lineWidth,
+            'color': this.color
+        });
         this.cxt.beginPath();
         e.preventDefault();
         // 减去canvas外层的offsetLeft，因为pageX是相对与屏幕边界的距离，如果外层包裹元素有padding，会导致画笔中心偏移
@@ -48,7 +53,12 @@ function Signature(obj) {
     }.bind(this), false);
     //绘制中
     this.canvas.addEventListener('touchmove', function(e) {
-        this.previousPoint.push({'event':e,'state':this.state});
+        this.previousPoint.push({
+            'event': e, 
+            'state': this.state,
+            'lineWidth': this.lineWidth,
+            'color': this.color
+        });
         this.cxt.lineTo(e.changedTouches[0].pageX - this.offsetLeft, e.changedTouches[0].pageY - this.offsetTop);
         this.cxt.stroke();
     }.bind(this), false);
@@ -81,13 +91,17 @@ function Signature(obj) {
 
 // 利用坐标点重新绘制
 Signature.prototype.resetCanvas=function(){
-    // 保存当前橡皮檫状态，因为draw方法会改变strokeStyle
+    // 保存当前橡皮檫状态、笔触大小和颜色，因为draw方法会改变strokeStyle和lineWidth
     let state = this.state;
+    let lineWidth = this.lineWidth;
+    let color = this.color;
     for (var i = 0; i < this.recordList.length; i++) {
         this.draw(this.recordList[i]);
     }
-    // 恢复橡皮檫状态
+    // 恢复橡皮檫状态、笔触大小和颜色
     this.eraser(state);
+    this.modifyLineWidth(lineWidth);
+    this.modifyColor(color);
 }
 
 Signature.prototype.draw=function(pointArr){
@@ -96,6 +110,8 @@ Signature.prototype.draw=function(pointArr){
     this.cxt.moveTo(pointArr[0].event.changedTouches[0].pageX - this.offsetLeft, pointArr[0].event.changedTouches[0].pageY - this.offsetTop);
     for(var i = 1; i < pointArr.length; i++) { 
         this.isState(pointArr[i].state);
+        this.modifyLineWidth(pointArr[i].lineWidth);
+        this.modifyColor(pointArr[i].color);
         this.cxt.lineTo(pointArr[i].event.changedTouches[0].pageX - this.offsetLeft, pointArr[i].event.changedTouches[0].pageY - this.offsetTop);
         this.cxt.stroke();
     }
