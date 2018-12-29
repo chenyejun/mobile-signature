@@ -60,19 +60,20 @@ function Signature(obj) {
 
     //清除画布
     this.clear = function () {
-        this.cxt.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        // 清空纪录，清除画布
+        this.recordList.length = 0;
+        this.cxt.fillRect(0, 0, this.canvas.width, this.canvas.height);
     }
     //保存图片，直接转base64
     this.save = function () {
         var imgBase64 = this.canvas.toDataURL();
-        console.log(imgBase64);
         return imgBase64
     }
     // 上一步
     this.previous = function () {
-        this.clear();
+        // 清除画布
+        this.cxt.fillRect(0, 0, this.canvas.width, this.canvas.height);
         this.recordList.pop();
-        console.log(this.recordList);
         this.resetCanvas();
     }
 
@@ -80,9 +81,13 @@ function Signature(obj) {
 
 // 利用坐标点重新绘制
 Signature.prototype.resetCanvas=function(){
-     for (var i = 0; i < this.recordList.length; i++) {
-            this.draw(this.recordList[i]);
-        }
+    // 保存当前橡皮檫状态，因为draw方法会改变strokeStyle
+    let state = this.state;
+    for (var i = 0; i < this.recordList.length; i++) {
+        this.draw(this.recordList[i]);
+    }
+    // 恢复橡皮檫状态
+    this.eraser(state);
 }
 
 Signature.prototype.draw=function(pointArr){
